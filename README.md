@@ -5,6 +5,7 @@
 **Hosted at:** `https://api.nordicdata.cloud/mcp`
 **Get a free API key:** [nordicdata.cloud](https://nordicdata.cloud)
 **Docs:** [nordicdata.cloud/docs#mcp](https://nordicdata.cloud/docs#mcp)
+**Smithery one-click install:** [smithery.ai/server/sofia-jameson-20/Nordic-Data](https://smithery.ai/server/sofia-jameson-20/Nordic-Data)
 
 This repository contains setup instructions and configuration snippets. The server itself is hosted — no local install required.
 
@@ -12,8 +13,8 @@ This repository contains setup instructions and configuration snippets. The serv
 
 ## What's covered
 
-- **Public procurement** (TED) for Norway, Sweden, Denmark, Finland, Iceland — notices and contract awards
-- **Norwegian company registry** (Brønnøysund) — full registry with contact info, accounts, shareholders, change history
+- **Public procurement** — TED (above-EU-threshold notices for Norway, Sweden, Denmark, Finland, Iceland) AND Doffin (Norway-only, **including below-EU-threshold municipal/county tenders that no other API exposes cleanly**)
+- **Norwegian company registry** — Brønnøysund + Aksjonærregisteret (full shareholder cap tables)
 - **Officer & ownership network** — board memberships, shortest-path queries, full role history
 - **News** — Norwegian-language news mentioning a company
 - **EU R&D** — Horizon Europe grants (Cordis)
@@ -40,7 +41,7 @@ Edit `claude_desktop_config.json`:
 }
 ```
 
-Restart Claude Desktop. The tools appear in the MCP picker.
+Restart Claude Desktop. The 28 tools appear in the MCP picker.
 
 ### Cursor
 
@@ -54,11 +55,11 @@ Header:    X-API-Key: <your key>
 Transport: Streamable HTTP
 ```
 
-## Tools
+## Tools (28 total)
 
-### Procurement (TED)
-- `search_tenders` — Search procurement notices by country, keyword, CPV code, date
-- `get_tender` — Full details for a single tender
+### Procurement (TED + Doffin)
+- `search_tenders` — Nordic procurement notices by country, keyword, CPV, date. Filter by `source: TED` (EU-threshold, all 5 countries) or `source: DOFFIN` (Norway only, includes below-threshold). Filter by `buyer_orgnr` to find all tenders from a specific Norwegian buyer.
+- `get_tender` — Full details by ID. Accepts both TED format (`317565-2026`) and Doffin format (`2026-108414`).
 - `search_awards` — Search contract awards (who won what)
 - `get_tender_leaderboard` — Top public-sector buyers in a Nordic country
 - `get_company_contract_wins` — Public-sector contracts won by a Norwegian company
@@ -66,17 +67,17 @@ Transport: Streamable HTTP
 ### Norwegian company registry
 - `search_companies` — Search by name, industry, location
 - `get_company` — Full registry record
-- `get_company_contact` — Public email + phone
+- `get_company_contact` — Public email + phone (with MX-verified email candidates)
 - `get_company_narrative` — AI-generated executive summary
 - `get_company_peers` — Peer-cohort benchmarks
 - `get_company_snapshot` — One-call snapshot across every data source
 - `get_company_changes` — Registry change history
 - `get_company_subsidiaries` — Subsidiaries registered under this orgnr
-- `bulk_get_companies` — Enrich a list of companies in one call
+- `bulk_get_companies` — Enrich a list of up to 100 companies in one call
 
 ### Financials & ownership
 - `get_company_accounts` — Annual accounts (revenue, profit, equity)
-- `get_company_shareholders` — Shareholders (Aksjonærregisteret)
+- `get_company_shareholders` — Shareholders (Aksjonærregisteret) — 3M+ positions across 396K companies
 - `get_shareholder_portfolio` — All companies a person/entity owns shares in
 
 ### Officer & network graph
@@ -102,12 +103,34 @@ Transport: Streamable HTTP
 
 ## Example prompts
 
-- *"Which Norwegian municipalities tendered snow-clearing contracts over 5M NOK in 2026?"*
+- *"Which Norwegian municipalities tendered snow-clearing contracts under 5M NOK with deadlines in the next 30 days?"* (uses Doffin's below-threshold coverage)
 - *"Pull the latest accounts and shareholders for orgnr 923609016."*
 - *"Find Norwegian companies using Snowflake."*
 - *"Who sits on the boards of all three of these companies?"*
 - *"Screen this list of suppliers against sanctions lists."*
 - *"Show me Horizon Europe grants won by Norwegian SMBs in clean energy."*
+
+## Agent-native buying
+
+Designed for autonomous agents — three endpoints let an agent (or its operator) discover plans, subscribe with a Stripe payment method, and change plans without a browser:
+
+```bash
+# Discover available plans
+curl https://api.nordicdata.cloud/agent/plans
+
+# Subscribe — agent supplies card token, gets working API key in response
+curl -X POST https://api.nordicdata.cloud/agent/subscribe \
+  -H "Content-Type: application/json" \
+  -d '{"email":"agent@example.com","plan":"starter","payment_method":"pm_xxx","country":"NO"}'
+
+# Upgrade later (using the API key)
+curl -X POST https://api.nordicdata.cloud/agent/change-plan \
+  -H "X-API-Key: nrd_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"plan":"pro"}'
+```
+
+See [docs#agent-quickstart](https://nordicdata.cloud/docs#agent-quickstart) for the full flow.
 
 ## Pricing
 
@@ -120,3 +143,5 @@ See [nordicdata.cloud](https://nordicdata.cloud).
 
 - Email: [hello@nordicdata.cloud](mailto:hello@nordicdata.cloud)
 - Docs: [nordicdata.cloud/docs](https://nordicdata.cloud/docs)
+- LLM-friendly site index: [nordicdata.cloud/llms.txt](https://nordicdata.cloud/llms.txt)
+- OpenAPI spec: [api.nordicdata.cloud/openapi.json](https://api.nordicdata.cloud/openapi.json)
