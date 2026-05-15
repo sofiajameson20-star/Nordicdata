@@ -1,6 +1,6 @@
 # Nordic Data MCP Server
 
-> Live Nordic public-sector and Norwegian corporate data, exposed as 28 MCP tools for AI agents.
+> Live Nordic company and public-sector data, exposed as 28 MCP tools for AI agents.
 
 **Hosted at:** `https://api.nordicdata.cloud/mcp`
 **Get a free API key:** [nordicdata.cloud](https://nordicdata.cloud)
@@ -13,11 +13,11 @@ This repository contains setup instructions and configuration snippets. The serv
 
 ## What's covered
 
-- **Public procurement** — TED (above-EU-threshold notices for Norway, Sweden, Denmark, Finland, Iceland) AND Doffin (Norway-only, **including below-EU-threshold municipal/county tenders that no other API exposes cleanly**)
-- **Norwegian company registry** — Brønnøysund + Aksjonærregisteret (full shareholder cap tables)
+- **Public procurement** — Nordic + EU-wide contract filings, including below-EU-threshold Norwegian municipal/county tenders that no other API exposes cleanly
+- **Norwegian company registry** — live registry data + full shareholder cap tables
 - **Officer & ownership network** — board memberships, shortest-path queries, full role history
 - **News** — Norwegian-language news mentioning a company
-- **EU R&D** — Horizon Europe grants (Cordis)
+- **EU R&D** — grant participations, joined to Norwegian recipients
 - **Tech intelligence** — find companies using a specific technology
 - **Compliance** — sanctions screening for any name or company + officers
 - **AI summaries** — executive narratives and peer benchmarks per company
@@ -57,9 +57,9 @@ Transport: Streamable HTTP
 
 ## Tools (28 total)
 
-### Procurement (TED + Doffin)
-- `search_tenders` — Nordic procurement notices by country, keyword, CPV, date. Filter by `source: TED` (EU-threshold, all 5 countries) or `source: DOFFIN` (Norway only, includes below-threshold). Filter by `buyer_orgnr` to find all tenders from a specific Norwegian buyer.
-- `get_tender` — Full details by ID. Accepts both TED format (`317565-2026`) and Doffin format (`2026-108414`).
+### Procurement
+- `search_tenders` — Nordic procurement notices by country, keyword, CPV, date. Filter by `source` (EU-wide vs Norway-with-below-threshold) or `buyer_orgnr`.
+- `get_tender` — Full tender details by ID
 - `search_awards` — Search contract awards (who won what)
 - `get_tender_leaderboard` — Top public-sector buyers in a Nordic country
 - `get_company_contract_wins` — Public-sector contracts won by a Norwegian company
@@ -70,14 +70,14 @@ Transport: Streamable HTTP
 - `get_company_contact` — Public email + phone (with MX-verified email candidates)
 - `get_company_narrative` — AI-generated executive summary
 - `get_company_peers` — Peer-cohort benchmarks
-- `get_company_snapshot` — One-call snapshot across every data source
+- `get_company_snapshot` — One-call snapshot across every data layer
 - `get_company_changes` — Registry change history
 - `get_company_subsidiaries` — Subsidiaries registered under this orgnr
 - `bulk_get_companies` — Enrich a list of up to 100 companies in one call
 
 ### Financials & ownership
 - `get_company_accounts` — Annual accounts (revenue, profit, equity)
-- `get_company_shareholders` — Shareholders (Aksjonærregisteret) — 3M+ positions across 396K companies
+- `get_company_shareholders` — Shareholder cap table — 3M+ positions across 396K companies
 - `get_shareholder_portfolio` — All companies a person/entity owns shares in
 
 ### Officer & network graph
@@ -91,8 +91,8 @@ Transport: Streamable HTTP
 - `search_news` — Search Norwegian news headlines
 
 ### EU R&D
-- `search_eu_grants` — Search Horizon Europe grants (Cordis)
-- `get_company_eu_grants` — Norwegian company's Horizon Europe participations
+- `search_eu_grants` — Search EU R&D grant participations
+- `get_company_eu_grants` — Norwegian company's EU R&D grant participations
 
 ### Tech intelligence
 - `find_companies_using_tech` — Norwegian companies using a specific technology
@@ -103,12 +103,12 @@ Transport: Streamable HTTP
 
 ## Example prompts
 
-- *"Which Norwegian municipalities tendered snow-clearing contracts under 5M NOK with deadlines in the next 30 days?"* (uses Doffin's below-threshold coverage)
+- *"Which Norwegian municipalities tendered snow-clearing contracts under 5M NOK with deadlines in the next 30 days?"* (uses below-threshold coverage)
 - *"Pull the latest accounts and shareholders for orgnr 923609016."*
 - *"Find Norwegian companies using Snowflake."*
 - *"Who sits on the boards of all three of these companies?"*
 - *"Screen this list of suppliers against sanctions lists."*
-- *"Show me Horizon Europe grants won by Norwegian SMBs in clean energy."*
+- *"Show me EU R&D grants won by Norwegian SMBs in clean energy."*
 
 ## Agent-native buying
 
